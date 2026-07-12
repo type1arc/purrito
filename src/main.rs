@@ -21,6 +21,8 @@ struct WaifuResponse {
 struct Args {
     #[arg(short, long)]
     count: u32,
+    #[arg(short, long)]
+    res: String,
 }
 
 #[tokio::main]
@@ -35,17 +37,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .ok_or("no images returned")?.url;
         println!("caught waifu: {}", url);
 
-        let filename = format!("waifu#{}", i);
+        let filename = format!("waifu#{}.jpg", i);
 
         let img_bytes: Bytes = reqwest::get(&url).await?.bytes().await?;
         let mut file = File::create(filename.clone()).await?;
         file.write_all(&img_bytes).await?;
 
         Command::new("chafa")
-            .args(&["--size=100x100", &filename])
+            .args(&["--align=mid,mid", &filename])
+            .arg(format!("--size={}", &args.res))
             .status()?;
 
-        println!("bagged waifu: {}", filename);
+        println!("bagged waifu: {}", &filename);
         println!("");
     }
 
